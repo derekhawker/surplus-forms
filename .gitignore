@@ -1,0 +1,12 @@
+/logs/*
+!.gitkeep
+/node_modules/
+/.idea
+/npm-debug.log
+/typings/*
+/src/**/*.js
+/src/**/*.jsx
+/*.iml
+/dist/
+/out/
+/reports/
