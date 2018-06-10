@@ -10,3 +10,5 @@
 /dist/
 /out/
 /reports/
+/examples/node_modules/
+/examples/dist/
