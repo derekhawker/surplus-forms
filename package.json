@@ -40,6 +40,6 @@
     "clean": "rm -rf dist/ out/",
     "watch": "tsc -w"
   },
-  "version": "0.0.1",
+  "version": "1.0.0",
   "typings": "dist/index.d.ts"
 }
