@@ -3,7 +3,7 @@ import S, {DataSignal} from "s-js";
 import {InputState} from "./FormState";
 import {
     __BaseInputComponent,
-    BaseTextInput, CSSErrorClasses,
+    defaultCSSClasses, filterNonHTMLProps,
     joinClasses,
     StandardProps,
     StandardTextProps,
@@ -54,24 +54,28 @@ export function InputRange(props: InputRangeProps): JSX.Element {
 export interface TextAreaProps extends StandardProps, StandardTextProps {}
 
 export function TextArea(props: TextAreaProps): JSX.Element {
+    let htmlProps = filterNonHTMLProps(props);
+    let errorClasses = props.classes || defaultCSSClasses;
+    return __BaseInputComponent(props, convertFromInputState, convertToInputState, render);
 
-    return __BaseInputComponent(props, getInputStateValue, getCurrentInput, render);
+    function convertFromInputState(inputState: InputState<any>, currentSignal: string | undefined) {
+        if (props.trimWhitespace && currentSignal) {
+            // To avoid whitespace in input from being removed, compare against trimmed current.
+            if (inputState.value === currentSignal.trim()) return currentSignal;
+            return inputState.value;
+        }
+        else {
+            return inputState.value;
+        }
+    }
 
-    function getCurrentInput(signalValue: any) {
+    function convertToInputState(signalValue: string) {
         return props.trimWhitespace ? signalValue.trim() : signalValue;
     }
 
-    function getInputStateValue(inputState: InputState<any>) {
-        return inputState.value;
-    }
-
-    function render(htmlProps: JSX.HTMLAttributes<HTMLTextAreaElement>,
-                    props: StandardProps,
-                    classes: CSSErrorClasses,
-                    signal: DataSignal<any>,
-                    handleOnBlur: (ev: Event) => void) {
+    function render(signal: DataSignal<any>, handleOnBlur: (ev: Event) => void) {
         return <textarea {...htmlProps}
-                         class={joinClasses(props, classes)}
+                         class={joinClasses(props, errorClasses)}
                          id={props.data().name}
                          name={props.data().name}
                          disabled={props.data().isDisabled || props.disabled}
@@ -108,19 +112,19 @@ export interface SelectProps<T> extends StandardProps {
 }
 
 export function Select<T>(props: SelectProps<T>) {
-    return __BaseInputComponent(props, getInputStateValue, getCurrentInput, render);
+    let htmlProps = filterNonHTMLProps(props);
+    return __BaseInputComponent(props, convertFromInputState, convertToInputState, render);
 
-    function getCurrentInput(selected: number) {
+    function convertFromInputState(inputState: InputState<T>, currentSignal: any) {
+        return indexOf(inputState.value);
+    }
+
+    function convertToInputState(selected: number) {
         // Selected is one of the numbers set in the value attribute of an option.
         // If no option is currently selected, then selected == 0. Since -1 isn't a valid
         // index
         if (selected === 0) return undefined;
         return props.options[selected - 1];
-    }
-
-    function getInputStateValue(inputState: InputState<T>) {
-        let v = indexOf(inputState.value);
-        return v;
     }
 
     function indexOf(value: any) {
@@ -151,15 +155,12 @@ export function Select<T>(props: SelectProps<T>) {
         }
     }
 
-    function render(htmlProps: JSX.HTMLAttributes<HTMLSelectElement>,
-                    props: SelectProps<T>,
-                    classes: CSSErrorClasses,
-                    signal: DataSignal<any>,
-                    handleOnBlur: (ev: Event) => void) {
+    function render(signal: DataSignal<any>, handleOnBlur: (ev: Event) => void) {
+        let errorClasses = props.classes || defaultCSSClasses;
         return (
             <select {...htmlProps}
                     fn={data(signal)}
-                    class={joinClasses(props, classes)}
+                    class={joinClasses(props, errorClasses)}
                     disabled={props.data().isDisabled}
                     onBlur={handleOnBlur}>
                 {props.options.map((it, i) => {
@@ -180,21 +181,19 @@ export interface InputRadioProps<T> extends StandardProps {
 }
 
 export function InputRadio<T>(props: InputRadioProps<T>) {
-    return __BaseInputComponent(props, getInputStateValue, getCurrentInput, render);
+    let htmlProps = filterNonHTMLProps(props);
+    let errorClasses = props.classes || defaultCSSClasses;
+    return __BaseInputComponent(props, convertFromInputState, convertToInputState, render);
 
-    function getCurrentInput(selected: number) {
-        return selected === 0 ? undefined : props.options[selected - 1];
-    }
-
-    function getInputStateValue(inputState: InputState<T>) {
+    function convertFromInputState(inputState: InputState<T>, currentSignal: number) {
         return indexOf(inputState.value);
     }
 
-    function render(htmlProps: JSX.HTMLAttributes<HTMLDivElement>,
-                    props: InputRadioProps<T>,
-                    classes: CSSErrorClasses,
-                    signal: DataSignal<any>,
-                    handleOnBlur: (ev: Event) => void) {
+    function convertToInputState(selected: number) {
+        return selected === 0 ? undefined : props.options[selected - 1];
+    }
+
+    function render(signal: DataSignal<any>, handleOnBlur: (ev: Event) => void) {
         let initialInput = S.sample(props.data);
         let labelClass = props.radioClass === undefined ? "" : props.radioClass;
         let radioSignals = props.options.map(it => S.value(indexOf(initialInput.value)));
@@ -219,7 +218,7 @@ export function InputRadio<T>(props: InputRadioProps<T>) {
         });
 
         return (
-            <div {...htmlProps} class={joinClasses(props, classes)}>
+            <div {...htmlProps} class={joinClasses(props, errorClasses)}>
                 {props.options.map((option, i) => {
                     return (
                         <label class={labelClass} for={props.data().name + "_" + i}>
@@ -254,5 +253,67 @@ export function InputRadio<T>(props: InputRadioProps<T>) {
         else {
             return option;
         }
+    }
+}
+
+export interface BaseInputTextProps extends StandardTextProps, StandardProps {
+    type: InputType;
+}
+
+type InputType =
+    "checkbox" |
+    "color" |
+    "date" |
+    "email" |
+    "file" |
+    "hidden" |
+    "image" |
+    "month" |
+    "number" |
+    "password" |
+    "radio" |
+    "range" |
+    "search" |
+    "reset" |
+    "button" |
+    "submit" |
+    "tel" |
+    "text" |
+    "time" |
+    "url" |
+    "week";
+
+export function BaseTextInput(props: BaseInputTextProps) {
+    let htmlProps = filterNonHTMLProps(props);
+    let errorClasses = props.classes || defaultCSSClasses;
+    return __BaseInputComponent(props, convertFromInputState, convertToInputState, render);
+
+    function convertFromInputState(inputState: InputState<any>, currentSignal: string | undefined) {
+        if (props.trimWhitespace && currentSignal) {
+            // To avoid whitespace in input from being removed, compare against trimmed current.
+            if (inputState.value === currentSignal.trim()) return currentSignal;
+            return inputState.value;
+        }
+        else {
+            return inputState.value;
+        }
+    }
+
+    function convertToInputState(signalValue: string) {
+        // To keep the types nice. Convert text to a number when using certain input types
+        if (props.type === "number") return Number(signalValue);
+        return props.trimWhitespace ? signalValue.trim() : signalValue;
+    }
+
+    function render(signal: DataSignal<any>, handleOnBlur: (ev: Event) => void) {
+        return <input {...htmlProps}
+                      class={joinClasses(props, errorClasses)}
+                      id={props.data().name}
+                      name={props.data().name}
+                      disabled={props.data().isDisabled || props.disabled}
+                      onBlur={handleOnBlur}
+                      fn={data(signal)}>
+            {props.children}
+        </input>;
     }
 }

@@ -1,7 +1,5 @@
-import * as Surplus from "surplus";
-import data from "surplus-mixin-data";
 import S, {DataSignal} from "s-js";
-import {InputRadioProps, InputRangeProps, SelectProps} from "./components";
+import {BaseInputTextProps, InputRadioProps, InputRangeProps, SelectProps} from "./components";
 import {FormError, InputState, InputValidation} from "./FormState";
 import {assertNever} from "./util";
 
@@ -43,65 +41,7 @@ export interface StandardTextProps {
     trimWhitespace?: boolean;
 }
 
-export interface BaseInputTextProps extends StandardTextProps, StandardProps {
-    type: InputType;
-}
-
-type InputType =
-    "checkbox" |
-    "color" |
-    "date" |
-    "email" |
-    "file" |
-    "hidden" |
-    "image" |
-    "month" |
-    "number" |
-    "password" |
-    "radio" |
-    "range" |
-    "search" |
-    "reset" |
-    "button" |
-    "submit" |
-    "tel" |
-    "text" |
-    "time" |
-    "url" |
-    "week";
-
-export function BaseTextInput(props: BaseInputTextProps) {
-    return __BaseInputComponent(props, getInputStateValue, getCurrentInput, render);
-
-    function getCurrentInput(signalValue: any) {
-        // To keep the types nice. Convert text from a number input into
-        if (props.type === "number") return Number(signalValue);
-
-        return props.trimWhitespace ? signalValue.trim() : signalValue;
-    }
-
-    function getInputStateValue(inputState: InputState<any>) {
-        return inputState.value;
-    }
-
-    function render(htmlProps: JSX.HTMLAttributes<HTMLInputElement>,
-                    props: StandardProps,
-                    classes: CSSErrorClasses,
-                    signal: DataSignal<any>,
-                    handleOnBlur: (ev: Event) => void) {
-        return <input {...htmlProps}
-                      class={joinClasses(props, classes)}
-                      id={props.data().name}
-                      name={props.data().name}
-                      disabled={props.data().isDisabled || props.disabled}
-                      onBlur={handleOnBlur}
-                      fn={data(signal)}>
-            {props.children}
-        </input>;
-    }
-}
-
-type RenderFn = (htmlProps: any, props: any, classes: any, signal: any, onBlur: (ev: Event) => void) => JSX.Element;
+type RenderFn = (signal: any, onBlur: (ev: Event) => void) => JSX.Element;
 
 function updateInputState<T>(inputState: InputState<T>,
                              nextValue: T,
@@ -153,21 +93,19 @@ type CompleteInputProps = BaseInputTextProps & SelectProps<any> & InputRadioProp
  *     - isTouched is set to the value on the props.data
  * */
 export function __BaseInputComponent(props: StandardProps,
-                                     getInputStateValue: (inputState: InputState<any>) => any,
+                                     getInputStateValue: (inputState: InputState<any>, signalValue: any) => any,
                                      getCurrentInput: (signalValue: any) => any,
                                      render: RenderFn) {
     let initialInput = S.sample(props.data);
-    let signal = S.data(getInputStateValue(initialInput));
+    let signal = S.data(getInputStateValue(initialInput, undefined));
     let currVersion = -1;
     let isExternal = true;
     let timer = -1;
     let hasPendingInput = false;
-    let htmlProps = filterNonHTMLProps();
-    let classes = props.classes || defaultCSSClasses;
     let validations = createValidationTests(props);
 
     S.on(props.data, () => {
-        let signalValue = getInputStateValue(props.data());
+        let signalValue = getInputStateValue(props.data(), S.sample(signal));
         isExternal = true;
         signal(signalValue);
     });
@@ -190,7 +128,7 @@ export function __BaseInputComponent(props: StandardProps,
         }
     });
 
-    return render(htmlProps, props, classes, signal, ev => handleOnBlur(ev));
+    return render(signal, ev => handleOnBlur(ev));
 
     function handleOnBlur(ev: Event) {
         // If hasPendingInput == true, then this input has a debounce value. The blur event shows the user has
@@ -198,26 +136,6 @@ export function __BaseInputComponent(props: StandardProps,
         // debounce.
         // Otherwise it should be obvious why we check for props.onBlur
         if (hasPendingInput || props.onBlur) debounceInput(S.sample(signal));
-    }
-
-    function filterNonHTMLProps(): JSX.HTMLAttributes<HTMLInputElement> {
-        let inputProps: CompleteInputProps = { ...props as any };
-        delete inputProps.options;
-        delete inputProps.classes;
-        delete inputProps.radioClass;
-        if (inputProps.type !== "range") delete inputProps.max;
-        if (inputProps.type !== "range") delete inputProps.min;
-        delete inputProps.regex;
-        delete inputProps.selector;
-        delete inputProps.trimWhitespace;
-        delete inputProps.validate;
-        delete inputProps.data;
-        delete inputProps.debounce;
-        delete inputProps.onBlur;
-        delete inputProps.required;
-        delete inputProps.children;
-
-        return (inputProps) as any;
     }
 
     function debounceInput(input: any, debounceTime: number = 0) {
@@ -293,4 +211,24 @@ function testErrors(input: InputState<any>, tests: Array<InputValidation>): numb
         }
     }
     return 0;
+}
+
+export function filterNonHTMLProps(props: any): JSX.HTMLAttributes<any> {
+    let inputProps: CompleteInputProps = { ...props as any };
+    delete inputProps.options;
+    delete inputProps.classes;
+    delete inputProps.radioClass;
+    if (inputProps.type !== "range") delete inputProps.max;
+    if (inputProps.type !== "range") delete inputProps.min;
+    delete inputProps.regex;
+    delete inputProps.selector;
+    delete inputProps.trimWhitespace;
+    delete inputProps.validate;
+    delete inputProps.data;
+    delete inputProps.debounce;
+    delete inputProps.onBlur;
+    delete inputProps.required;
+    delete inputProps.children;
+
+    return (inputProps) as any;
 }
