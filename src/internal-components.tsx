@@ -229,6 +229,7 @@ export function filterNonHTMLProps(props: any): JSX.HTMLAttributes<any> {
     delete inputProps.onBlur;
     delete inputProps.required;
     delete inputProps.children;
+    delete inputProps.legendText;
 
     return (inputProps) as any;
 }

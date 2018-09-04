@@ -13,6 +13,7 @@ export default function(env: NodeEnv): webpack.Configuration {
             "index": "./src/index.tsx",
         },
         devServer: {
+            host: "0.0.0.0",
             contentBase: [path.join(__dirname, "..", "docs")],
         },
         devtool: "source-map",

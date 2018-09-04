@@ -176,6 +176,8 @@ export function Select<T>(props: SelectProps<T>) {
 
 export interface InputRadioProps<T> extends StandardProps {
     options: Array<T>;
+    /** descriptive text placed inside the legend element*/
+    legendText: string;
     radioClass?: string;
     selector?: keyof T | ((option: T) => string);
 }
@@ -218,22 +220,24 @@ export function InputRadio<T>(props: InputRadioProps<T>) {
         });
 
         return (
-            <div {...htmlProps} class={joinClasses(props, errorClasses)}>
-                {props.options.map((option, i) => {
-                    return (
-                        <label class={labelClass} for={props.data().name + "_" + i}>
-                            <input disabled={props.data().isDisabled}
-                                   fn={data(radioSignals[i], i + 1)}
-                                   id={props.data().name + "_" + i}
-                                   name={props.data().name}
-                                   onBlur={handleOnBlur}
-                                   type="radio"
-                                   value={i + 1}/>
-                            <span>{label(i)}</span>
-                        </label>);
-                })
+            <fieldset {...htmlProps} class={joinClasses(props, errorClasses)}>
+                <legend>{props.legendText}</legend>
+                {
+                    props.options.map((option, i) => {
+                        return (
+                            <label class={labelClass} for={props.data().name + "_" + i}>
+                                <input disabled={props.data().isDisabled}
+                                       fn={data(radioSignals[i], i + 1)}
+                                       id={props.data().name + "_" + i}
+                                       name={props.data().name}
+                                       onBlur={handleOnBlur}
+                                       type="radio"
+                                       value={i + 1}/>
+                                <span>{label(i)}</span>
+                            </label>);
+                    })
                 }
-            </div>);
+            </fieldset>);
     }
 
     function indexOf(value: any): number {

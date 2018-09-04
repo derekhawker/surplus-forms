@@ -66,14 +66,14 @@ const App = S.root(() => {
                         <div class="column">
                             <label for={form.firstName().name}>First Name</label>
                             <InputText data={form.firstName}
-                                       classes={{ error: "fc error", default: "fc" }}
+                                       classes={{ error: "input--error", default: "" }}
                                        debounce={300}
                                        min={3}
                                        max={8}
                                        regex={/^[A-K][a-z]+$/}
                                        placeholder="First Name"
                                        validate={v => {
-                                           return v.toUpperCase() !== "KRILLIN" ? ExampleFormError.BlackListName : 0
+                                           return v.toUpperCase() !== "KRILLIN" ? ExampleFormError.BlackListName : 0;
                                        }}
                             />
                             {form.firstName().isTouched && form.firstName().error === FormError.StrRegex && (
@@ -158,17 +158,18 @@ const App = S.root(() => {
 
                     <div class="row">
                         <div class="column">
-                            <label> Radiobutton1</label>
-                            <InputRadio data={form.radiobutton1} options={options().map(it => it.value)}/>
+                            <InputRadio data={form.radiobutton1}
+                                        legendText="RadioButton1"
+                                        options={options().map(it => it.value)}/>
                         </div>
                         <div class="column">
-                            <label>Radiobutton2*</label>
-                            <InputRadio classes={{ error: "fc error", default: "fc" }}
+                            <InputRadio classes={{ error: "input--error", default: "" }}
                                         class="radio-group-container"
                                         data={form.radiobutton2}
+                                        legendText="RadioButton2"
                                         style={{ paddingTop: "1rem" }}
                                         options={options()}
-                                        radioClass="radio-inline"
+                                        radioClass="lbl__inline-radio"
                                         required
                                         selector={"value"}/>
                             {form.radiobutton2().isTouched && form.radiobutton2().error === FormError.Required && (
@@ -180,7 +181,7 @@ const App = S.root(() => {
                     <div class="row">
                         <div class="column">
                             <label for={form.select1().name}>Select1*</label>
-                            <Select classes={{ error: "fc error", default: "fc" }}
+                            <Select classes={{ error: "input--error", default: "" }}
                                     data={form.select1}
                                     options={options().map(it => it.value)}
                                     required/>
@@ -291,7 +292,7 @@ function TogglePassword(props: InputPasswordProps): JSX.Element {
             </BaseTextInput>
             <button type="button" class="button-clear pdr0 pdl0" onClick={() => revealPassword(!revealPassword())}>
                 <svg xmlns="http://www.w3.org/2000/svg"
-                     class="password-eye"
+                     class="svg__password-eye"
                      width="24" height="24"
                      viewBox="0 0 24 24">
                     <path
