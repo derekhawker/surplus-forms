@@ -27,12 +27,8 @@ export interface StandardTextProps {
     regex?: string | RegExp;
     trimWhitespace?: boolean;
 }
-export interface BaseInputTextProps extends StandardTextProps, StandardProps {
-    type: InputType;
-}
-declare type InputType = "checkbox" | "color" | "date" | "email" | "file" | "hidden" | "image" | "month" | "number" | "password" | "radio" | "range" | "search" | "reset" | "button" | "submit" | "tel" | "text" | "time" | "url" | "week";
-export declare function BaseTextInput(props: BaseInputTextProps): JSX.Element;
-declare type RenderFn = (htmlProps: any, props: any, classes: any, signal: any, onBlur: (ev: Event) => void) => JSX.Element;
-export declare function __BaseInputComponent(props: StandardProps, getInputStateValue: (inputState: InputState<any>) => any, getCurrentInput: (signalValue: any) => any, render: RenderFn): JSX.Element;
+declare type RenderFn = (signal: any, onBlur: (ev: Event) => void) => JSX.Element;
+export declare function __BaseInputComponent(props: StandardProps, getInputStateValue: (inputState: InputState<any>, signalValue: any) => any, getCurrentInput: (signalValue: any) => any, render: RenderFn): JSX.Element;
 export declare function joinClasses(props: StandardProps, errorClasses: CSSErrorClasses): string;
+export declare function filterNonHTMLProps(props: any): JSX.HTMLAttributes<any>;
 export {};

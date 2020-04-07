@@ -37,7 +37,14 @@ export interface SelectProps<T> extends StandardProps {
 export declare function Select<T>(props: SelectProps<T>): JSX.Element;
 export interface InputRadioProps<T> extends StandardProps {
     options: Array<T>;
+    legendText: string;
     radioClass?: string;
     selector?: keyof T | ((option: T) => string);
 }
 export declare function InputRadio<T>(props: InputRadioProps<T>): JSX.Element;
+export interface BaseInputTextProps extends StandardTextProps, StandardProps {
+    type: InputType;
+}
+declare type InputType = "checkbox" | "color" | "date" | "email" | "file" | "hidden" | "image" | "month" | "number" | "password" | "radio" | "range" | "search" | "reset" | "button" | "submit" | "tel" | "text" | "time" | "url" | "week";
+export declare function BaseTextInput(props: BaseInputTextProps): JSX.Element;
+export {};

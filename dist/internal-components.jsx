@@ -1,15 +1,16 @@
 "use strict";
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var Surplus = require("surplus");
-var surplus_mixin_data_1 = require("surplus-mixin-data");
 var s_js_1 = require("s-js");
 var FormState_1 = require("./FormState");
 var util_1 = require("./util");
@@ -17,23 +18,6 @@ exports.defaultCSSClasses = {
     default: "",
     error: "",
 };
-function BaseTextInput(props) {
-    return __BaseInputComponent(props, getInputStateValue, getCurrentInput, render);
-    function getCurrentInput(signalValue) {
-        if (props.type === "number")
-            return Number(signalValue);
-        return props.trimWhitespace ? signalValue.trim() : signalValue;
-    }
-    function getInputStateValue(inputState) {
-        return inputState.value;
-    }
-    function render(htmlProps, props, classes, signal, handleOnBlur) {
-        return <input {...htmlProps} class={joinClasses(props, classes)} id={props.data().name} name={props.data().name} disabled={props.data().isDisabled || props.disabled} onBlur={handleOnBlur} fn={surplus_mixin_data_1.default(signal)}>
-            {props.children}
-        </input>;
-    }
-}
-exports.BaseTextInput = BaseTextInput;
 function updateInputState(inputState, nextValue, tests) {
     inputState.value = nextValue;
     inputState.isChanged = nextValue !== inputState.startValue;
@@ -67,16 +51,14 @@ function createValidationTests(props) {
 }
 function __BaseInputComponent(props, getInputStateValue, getCurrentInput, render) {
     var initialInput = s_js_1.default.sample(props.data);
-    var signal = s_js_1.default.data(getInputStateValue(initialInput));
+    var signal = s_js_1.default.data(getInputStateValue(initialInput, undefined));
     var currVersion = -1;
     var isExternal = true;
     var timer = -1;
     var hasPendingInput = false;
-    var htmlProps = filterNonHTMLProps();
-    var classes = props.classes || exports.defaultCSSClasses;
     var validations = createValidationTests(props);
     s_js_1.default.on(props.data, function () {
-        var signalValue = getInputStateValue(props.data());
+        var signalValue = getInputStateValue(props.data(), s_js_1.default.sample(signal));
         isExternal = true;
         signal(signalValue);
     });
@@ -91,30 +73,10 @@ function __BaseInputComponent(props, getInputStateValue, getCurrentInput, render
             debounceInput(curr, props.debounce);
         }
     });
-    return render(htmlProps, props, classes, signal, function (ev) { return handleOnBlur(ev); });
+    return render(signal, function (ev) { return handleOnBlur(ev); });
     function handleOnBlur(ev) {
         if (hasPendingInput || props.onBlur)
             debounceInput(s_js_1.default.sample(signal));
-    }
-    function filterNonHTMLProps() {
-        var inputProps = __assign({}, props);
-        delete inputProps.options;
-        delete inputProps.classes;
-        delete inputProps.radioClass;
-        if (inputProps.type !== "range")
-            delete inputProps.max;
-        if (inputProps.type !== "range")
-            delete inputProps.min;
-        delete inputProps.regex;
-        delete inputProps.selector;
-        delete inputProps.trimWhitespace;
-        delete inputProps.validate;
-        delete inputProps.data;
-        delete inputProps.debounce;
-        delete inputProps.onBlur;
-        delete inputProps.required;
-        delete inputProps.children;
-        return (inputProps);
     }
     function debounceInput(input, debounceTime) {
         if (debounceTime === void 0) { debounceTime = 0; }
@@ -196,4 +158,26 @@ function testErrors(input, tests) {
     }
     return 0;
 }
+function filterNonHTMLProps(props) {
+    var inputProps = __assign({}, props);
+    delete inputProps.options;
+    delete inputProps.classes;
+    delete inputProps.radioClass;
+    if (inputProps.type !== "range")
+        delete inputProps.max;
+    if (inputProps.type !== "range")
+        delete inputProps.min;
+    delete inputProps.regex;
+    delete inputProps.selector;
+    delete inputProps.trimWhitespace;
+    delete inputProps.validate;
+    delete inputProps.data;
+    delete inputProps.debounce;
+    delete inputProps.onBlur;
+    delete inputProps.required;
+    delete inputProps.children;
+    delete inputProps.legendText;
+    return (inputProps);
+}
+exports.filterNonHTMLProps = filterNonHTMLProps;
 //# sourceMappingURL=internal-components.jsx.map

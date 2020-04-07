@@ -6,15 +6,13 @@ import {BundleAnalyzerPlugin} from "webpack-bundle-analyzer";
 type NodeEnv = { dev: boolean; prod: boolean; test: boolean };
 
 export default function(env: NodeEnv): webpack.Configuration {
-    let plugins = [];
+    const plugins = [];
     if (env.prod) plugins.push(new BundleAnalyzerPlugin());
-    return {
+    const config: webpack.Configuration = {
         entry: {
             "index": "./src/index.tsx",
         },
-        devServer: {
-            contentBase: [path.join(__dirname, "..", "docs")],
-        },
+
         devtool: "source-map",
         output: {
             path: path.resolve(__dirname, "..", "docs"),
@@ -47,5 +45,11 @@ export default function(env: NodeEnv): webpack.Configuration {
         },
         plugins,
     };
+    (config as any).devServer = {
+        host: "0.0.0.0",
+        contentBase: [path.join(__dirname, "..", "docs")],
+    };
+
+    return config;
 };
 

@@ -1,7 +1,6 @@
 import { DataSignal } from "s-js";
 export declare type FormState<T> = FormStateInputs<T> & {
     status: DataSignal<FormStatus>;
-} & {
     forEachInput: (fn: (sig: DataSignal<InputState<any>>, i?: number) => void) => void;
 };
 declare type FormStateInputs<T> = {

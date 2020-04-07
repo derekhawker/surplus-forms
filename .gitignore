@@ -12,3 +12,4 @@
 /reports/
 /examples/node_modules/
 /examples/dist/
+/docs/*.js.map

@@ -5,39 +5,48 @@ var s_js_1 = require("s-js");
 var internal_components_1 = require("./internal-components");
 var surplus_mixin_data_1 = require("surplus-mixin-data");
 function InputText(props) {
-    return <internal_components_1.BaseTextInput {...props} type="text">{props.children}</internal_components_1.BaseTextInput>;
+    return <BaseTextInput {...props} type="text">{props.children}</BaseTextInput>;
 }
 exports.InputText = InputText;
 function InputColor(props) {
-    return <internal_components_1.BaseTextInput {...props} type="color">{props.children}</internal_components_1.BaseTextInput>;
+    return <BaseTextInput {...props} type="color">{props.children}</BaseTextInput>;
 }
 exports.InputColor = InputColor;
 function InputEmail(props) {
-    return <internal_components_1.BaseTextInput {...props} type="email">{props.children}</internal_components_1.BaseTextInput>;
+    return <BaseTextInput {...props} type="email">{props.children}</BaseTextInput>;
 }
 exports.InputEmail = InputEmail;
 function InputPassword(props) {
-    return <internal_components_1.BaseTextInput {...props} type="password">{props.children}</internal_components_1.BaseTextInput>;
+    return <BaseTextInput {...props} type="password">{props.children}</BaseTextInput>;
 }
 exports.InputPassword = InputPassword;
 function InputNumber(props) {
-    return <internal_components_1.BaseTextInput {...props} type="number">{props.children}</internal_components_1.BaseTextInput>;
+    return <BaseTextInput {...props} type="number">{props.children}</BaseTextInput>;
 }
 exports.InputNumber = InputNumber;
 function InputRange(props) {
-    return <internal_components_1.BaseTextInput {...props} type="range">{props.children}</internal_components_1.BaseTextInput>;
+    return <BaseTextInput {...props} type="range">{props.children}</BaseTextInput>;
 }
 exports.InputRange = InputRange;
 function TextArea(props) {
-    return internal_components_1.__BaseInputComponent(props, getInputStateValue, getCurrentInput, render);
-    function getCurrentInput(signalValue) {
+    var htmlProps = internal_components_1.filterNonHTMLProps(props);
+    var errorClasses = props.classes || internal_components_1.defaultCSSClasses;
+    return internal_components_1.__BaseInputComponent(props, convertFromInputState, convertToInputState, render);
+    function convertFromInputState(inputState, currentSignal) {
+        if (props.trimWhitespace && currentSignal) {
+            if (inputState.value === currentSignal.trim())
+                return currentSignal;
+            return inputState.value;
+        }
+        else {
+            return inputState.value;
+        }
+    }
+    function convertToInputState(signalValue) {
         return props.trimWhitespace ? signalValue.trim() : signalValue;
     }
-    function getInputStateValue(inputState) {
-        return inputState.value;
-    }
-    function render(htmlProps, props, classes, signal, handleOnBlur) {
-        return <textarea {...htmlProps} class={internal_components_1.joinClasses(props, classes)} id={props.data().name} name={props.data().name} disabled={props.data().isDisabled || props.disabled} onBlur={handleOnBlur} fn={surplus_mixin_data_1.default(signal)}/>;
+    function render(signal, handleOnBlur) {
+        return <textarea {...htmlProps} class={internal_components_1.joinClasses(props, errorClasses)} id={props.data().name} name={props.data().name} disabled={props.data().isDisabled || props.disabled} onBlur={handleOnBlur} fn={surplus_mixin_data_1.default(signal)}/>;
     }
 }
 exports.TextArea = TextArea;
@@ -50,19 +59,19 @@ function InputReset(props) {
 }
 exports.InputReset = InputReset;
 function InputCheckbox(props) {
-    return <internal_components_1.BaseTextInput {...props} type="checkbox">{props.children}</internal_components_1.BaseTextInput>;
+    return <BaseTextInput {...props} type="checkbox">{props.children}</BaseTextInput>;
 }
 exports.InputCheckbox = InputCheckbox;
 function Select(props) {
-    return internal_components_1.__BaseInputComponent(props, getInputStateValue, getCurrentInput, render);
-    function getCurrentInput(selected) {
+    var htmlProps = internal_components_1.filterNonHTMLProps(props);
+    return internal_components_1.__BaseInputComponent(props, convertFromInputState, convertToInputState, render);
+    function convertFromInputState(inputState, currentSignal) {
+        return indexOf(inputState.value);
+    }
+    function convertToInputState(selected) {
         if (selected === 0)
             return undefined;
         return props.options[selected - 1];
-    }
-    function getInputStateValue(inputState) {
-        var v = indexOf(inputState.value);
-        return v;
     }
     function indexOf(value) {
         if (value == null)
@@ -87,8 +96,9 @@ function Select(props) {
             return option;
         }
     }
-    function render(htmlProps, props, classes, signal, handleOnBlur) {
-        return (<select {...htmlProps} fn={surplus_mixin_data_1.default(signal)} class={internal_components_1.joinClasses(props, classes)} disabled={props.data().isDisabled} onBlur={handleOnBlur}>
+    function render(signal, handleOnBlur) {
+        var errorClasses = props.classes || internal_components_1.defaultCSSClasses;
+        return (<select {...htmlProps} fn={surplus_mixin_data_1.default(signal)} class={internal_components_1.joinClasses(props, errorClasses)} disabled={props.data().isDisabled} onBlur={handleOnBlur}>
                 {props.options.map(function (it, i) {
             var text = label(i);
             var value = i + 1;
@@ -99,14 +109,16 @@ function Select(props) {
 }
 exports.Select = Select;
 function InputRadio(props) {
-    return internal_components_1.__BaseInputComponent(props, getInputStateValue, getCurrentInput, render);
-    function getCurrentInput(selected) {
-        return selected === 0 ? undefined : props.options[selected - 1];
-    }
-    function getInputStateValue(inputState) {
+    var htmlProps = internal_components_1.filterNonHTMLProps(props);
+    var errorClasses = props.classes || internal_components_1.defaultCSSClasses;
+    return internal_components_1.__BaseInputComponent(props, convertFromInputState, convertToInputState, render);
+    function convertFromInputState(inputState, currentSignal) {
         return indexOf(inputState.value);
     }
-    function render(htmlProps, props, classes, signal, handleOnBlur) {
+    function convertToInputState(selected) {
+        return selected === 0 ? undefined : props.options[selected - 1];
+    }
+    function render(signal, handleOnBlur) {
         var initialInput = s_js_1.default.sample(props.data);
         var labelClass = props.radioClass === undefined ? "" : props.radioClass;
         var radioSignals = props.options.map(function (it) { return s_js_1.default.value(indexOf(initialInput.value)); });
@@ -127,14 +139,15 @@ function InputRadio(props) {
                 }
             });
         });
-        return (<div {...htmlProps} class={internal_components_1.joinClasses(props, classes)}>
+        return (<fieldset {...htmlProps} class={internal_components_1.joinClasses(props, errorClasses)}>
+                <legend>{props.legendText}</legend>
                 {props.options.map(function (option, i) {
             return (<label class={labelClass} for={props.data().name + "_" + i}>
-                            <input disabled={props.data().isDisabled} fn={surplus_mixin_data_1.default(radioSignals[i], i + 1)} id={props.data().name + "_" + i} name={props.data().name} onBlur={handleOnBlur} type="radio" value={i + 1}/>
-                            <span>{label(i)}</span>
-                        </label>);
+                                <input disabled={props.data().isDisabled} fn={surplus_mixin_data_1.default(radioSignals[i], i + 1)} id={props.data().name + "_" + i} name={props.data().name} onBlur={handleOnBlur} type="radio" value={i + 1}/>
+                                <span>{label(i)}</span>
+                            </label>);
         })}
-            </div>);
+            </fieldset>);
     }
     function indexOf(value) {
         return props.options.indexOf(value) + 1;
@@ -155,4 +168,35 @@ function InputRadio(props) {
     }
 }
 exports.InputRadio = InputRadio;
+function BaseTextInput(props) {
+    var htmlProps = internal_components_1.filterNonHTMLProps(props);
+    var errorClasses = props.classes || internal_components_1.defaultCSSClasses;
+    return internal_components_1.__BaseInputComponent(props, convertFromInputState, convertToInputState, render);
+    function convertFromInputState(inputState, currentSignal) {
+        if (props.trimWhitespace && currentSignal) {
+            if (inputState.value === currentSignal.trim())
+                return currentSignal;
+            return inputState.value;
+        }
+        else if (props.type === "number") {
+            if (inputState.value === Number(currentSignal))
+                return currentSignal;
+            return inputState.value;
+        }
+        else {
+            return inputState.value;
+        }
+    }
+    function convertToInputState(signalValue) {
+        if (props.type === "number")
+            return Number(signalValue);
+        return props.trimWhitespace ? signalValue.trim() : signalValue;
+    }
+    function render(signal, handleOnBlur) {
+        return <input {...htmlProps} class={internal_components_1.joinClasses(props, errorClasses)} id={props.data().name} name={props.data().name} disabled={props.data().isDisabled || props.disabled} onBlur={handleOnBlur} fn={surplus_mixin_data_1.default(signal)}>
+            {props.children}
+        </input>;
+    }
+}
+exports.BaseTextInput = BaseTextInput;
 //# sourceMappingURL=components.jsx.map

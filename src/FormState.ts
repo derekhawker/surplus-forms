@@ -2,10 +2,9 @@ import S, {DataSignal} from "s-js";
 
 export type FormState<T> = FormStateInputs<T> & {
     status: DataSignal<FormStatus>
-} & {
     /** Iterate over all input signals. */
     forEachInput: (fn: (sig: DataSignal<InputState<any>>, i?: number) => void) => void;
-};
+}
 
 type FormStateInputs<T> = {
     [P in keyof T]: DataSignal<InputState<T[P]>>
@@ -149,11 +148,12 @@ export function createFormState<T>(initialState: T,
 
 export interface InputState<T> {
     __v: number;
+    /** Based on referential equality */
     isChanged: boolean;
     isDisabled: boolean;
-    /** True if the user has changed the form. Initial value is false */
+    /** True if the user has made any input to the form */
     isTouched: boolean;
-    /** Non-zero when the Field has an error (always 0 when dirty === false) */
+    /** Non-zero when the Field has an error  */
     error: number;
     /** property name of Field */
     name: string;
