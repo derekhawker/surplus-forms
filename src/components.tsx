@@ -298,6 +298,10 @@ export function BaseTextInput(props: BaseInputTextProps) {
             if (inputState.value === currentSignal.trim()) return currentSignal;
             return inputState.value;
         }
+        else if (props.type === "number") {
+            if (inputState.value === Number(currentSignal)) return currentSignal;
+            return inputState.value;
+        }
         else {
             return inputState.value;
         }
